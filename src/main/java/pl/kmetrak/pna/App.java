@@ -10,6 +10,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -18,6 +19,7 @@ import org.jsoup.select.Elements;
 public class App {
 
 	static boolean onlyDownload=false;
+	static final Logger logger = Logger.getLogger(App.class);
 	public static void main(String[] args) {
 		App.run();
 	}
@@ -93,21 +95,21 @@ public class App {
 				InputStream is = new FileInputStream(file);
 				data = readInputStream(is);
 				if (data.length() == 0) {
-					System.err.println("{HIT EMPTY}PNA=" + pna + " PAGE="+ page);//TODO: Logger
+					logger.debug("{HIT EMPTY}PNA=" + pna + " PAGE="+ page);//TODO: Logger
 				} else {
-					System.err.println("{HIT      }PNA=" + pna + " PAGE="+ page);//TODO: Logger
+					logger.debug("{HIT      }PNA=" + pna + " PAGE="+ page);//TODO: Logger
 				}
 				is.close();
 			} else {
 				data = readURLData("http://kody.poczta-polska.pl/index.php?p="+ page + "&kod=" + pna + "&page=kod");
 				PrintStream ps = new PrintStream(file);
-				if (data.contains("Zapytanie nie zwrÛci≥o wynikÛw.")) {
+				if (data.contains("Zapytanie nie zwr√≥ci≈Ço wynik√≥w.")) {
 					ps.print("");
 					data = "";
-					System.err.println("{MIS EMPTY}PNA=" + pna + " PAGE="+ page);//TODO: Logger
+					logger.debug("{MIS EMPTY}PNA=" + pna + " PAGE="+ page);//TODO: Logger
 				} else {
 					ps.print(data);
-					System.err.println("{MIS      }PNA=" + pna + " PAGE="+ page);//TODO: Logger
+					logger.debug("{MIS      }PNA=" + pna + " PAGE="+ page);//TODO: Logger
 				}
 				ps.close();
 			}
