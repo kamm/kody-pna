@@ -18,8 +18,9 @@ import org.jsoup.select.Elements;
 
 public class App {
 
-	static boolean onlyDownload=false;
+	static boolean onlyDownload = false;
 	static final Logger logger = Logger.getLogger(App.class);
+
 	public static void main(String[] args) {
 		App.run();
 	}
@@ -65,16 +66,16 @@ public class App {
 
 	static void parsePNA(String pna, int page) {
 		String data = getPage(pna, page);
-		if(onlyDownload){//download files to cache, don't parse this (yet)
+		if (onlyDownload) {//download files to cache, don't parse this (yet)
 			return;
 		}
 		data = data.replaceAll("<td>(.*)<br />", "<td><b>$1</b><br/>"); //dirty hack to fix reading street
+		data = data.replace("&nbsp;", " "); //dirty hack to non braking spaces
 		Document doc = Jsoup.parse(data);
 		Elements records = doc.select("table[width=100%] tr");
 		for (int i = 1; i < records.size(); i++) {
 			Element record = records.get(i);
 			Elements fields = record.select("td");
-			//String extranctedPna = fields.get(1).text();
 			String name = fields.get(2).text();
 			String city = fields.get(3).text();
 			String street = fields.get(4).select("b").text();
@@ -82,34 +83,34 @@ public class App {
 			String voivodeship = fields.get(5).text();
 			String county = fields.get(6).text();
 			String municipality = fields.get(7).text();
-			System.out.println(pna+";"+name+";"+city+";"+street+";"+info+";"+voivodeship+";"+county+";"+municipality);
+			System.out.println(pna + ";" + name + ";" + city + ";" + street + ";" + info + ";" + voivodeship + ";" + county + ";" + municipality);
 		}
 	}
 
 	static String getPage(String pna, int page) {
-		File file = new File(String.format("c:/exp/kody/%s_%d", pna, page)); //TODO: externalize 
+		File file = new File(String.format("c:/exp/kody/%s_%d", pna, page)); //TODO: externalize
 		file.getParentFile().mkdirs();
 		String data = "";
 		try {
 			if (file.exists()) {
 				InputStream is = new FileInputStream(file);
-				data = readInputStream(is);
+				data = readInputStream(is, "UTF-8");
 				if (data.length() == 0) {
-					logger.debug("{HIT EMPTY}PNA=" + pna + " PAGE="+ page);//TODO: Logger
+					logger.debug("{HIT EMPTY}PNA=" + pna + " PAGE=" + page);
 				} else {
-					logger.debug("{HIT      }PNA=" + pna + " PAGE="+ page);//TODO: Logger
+					logger.debug("{HIT      }PNA=" + pna + " PAGE=" + page);
 				}
 				is.close();
 			} else {
-				data = readURLData("http://kody.poczta-polska.pl/index.php?p="+ page + "&kod=" + pna + "&page=kod");
-				PrintStream ps = new PrintStream(file);
+				data = readURLData("http://kody.poczta-polska.pl/index.php?p=" + page + "&kod=" + pna + "&page=kod");
+				PrintStream ps = new PrintStream(file, "UTF-8");
 				if (data.contains("Zapytanie nie zwróciło wyników.")) {
 					ps.print("");
 					data = "";
-					logger.debug("{MIS EMPTY}PNA=" + pna + " PAGE="+ page);//TODO: Logger
+					logger.debug("{MIS EMPTY}PNA=" + pna + " PAGE=" + page);
 				} else {
 					ps.print(data);
-					logger.debug("{MIS      }PNA=" + pna + " PAGE="+ page);//TODO: Logger
+					logger.debug("{MIS      }PNA=" + pna + " PAGE=" + page);
 				}
 				ps.close();
 			}
@@ -142,7 +143,19 @@ public class App {
 		while ((i = is.read(buffer)) != -1) {
 			baos.write(buffer, 0, i);
 		}
-		data = baos.toString("UTF-8");
+		data = baos.toString();
+		return data;
+	}
+
+	static String readInputStream(InputStream is, String encoding) throws IOException {
+		String data = "";
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		byte[] buffer = new byte[4096];
+		int i = 0;
+		while ((i = is.read(buffer)) != -1) {
+			baos.write(buffer, 0, i);
+		}
+		data = baos.toString(encoding);
 		return data;
 	}
 }
