@@ -88,7 +88,7 @@ public class App {
 	}
 
 	static String getPage(String pna, int page) {
-		File file = new File(String.format("c:/exp/kody/%s_%d", pna, page)); //TODO: externalize
+		File file = new File(String.format("kody-cache/%s/%s_%d", pna.substring(0, 2), pna, page)); //TODO: externalize
 		file.getParentFile().mkdirs();
 		String data = "";
 		try {
